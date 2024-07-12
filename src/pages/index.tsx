@@ -349,7 +349,7 @@ const TestPage = () => {
                             <Divider />
                             <InfoBox>
                                 <StatTitle>Gas Limit</StatTitle>
-                                <InfoValue>600M</InfoValue>
+                                <InfoValue>{process.env.NEXT_PUBLIC_GAS_LIMIT}M</InfoValue>
                             </InfoBox>
                         </InfoWrapper>
 
