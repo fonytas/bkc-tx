@@ -225,7 +225,7 @@ const TestPage = () => {
                     },
                 },
                 min: 0,
-                max: 28000,
+                suggestedMax: 28000,
                 ticks: {
                     stepSize: 4000,
                 },
