@@ -31,7 +31,7 @@ let CURRENT_TRANSACTION = 0
 
 const headers = {
     'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': true,
+    'Access-Control-Allow-Origin': '*',
 }
 
 const TestPage = () => {
