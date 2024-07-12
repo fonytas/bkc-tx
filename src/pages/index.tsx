@@ -5,6 +5,7 @@ import { ethers } from 'ethers'
 import { useEffect, useRef, useState } from 'react'
 import { Bar } from 'react-chartjs-2'
 import { styled } from 'styled-components'
+// @ts-ignore
 import AnimatedNumber from 'react-animated-number'
 import { formatNumber } from '@helpers/formatNumber'
 import { removeTrailingDecimal } from '@helpers/removeTrailingDecimal'
