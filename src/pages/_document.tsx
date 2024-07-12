@@ -25,7 +25,9 @@ class MyDocument extends Document {
     render() {
         return (
             <Html lang='en'>
-                <Head />
+                <Head>
+                    <meta http-equiv='Content-Security-Policy' content='upgrade-insecure-requests' />
+                </Head>
                 <body>
                     <Main />
                     <NextScript />
