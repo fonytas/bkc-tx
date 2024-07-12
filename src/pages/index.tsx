@@ -485,7 +485,7 @@ const ContentWrapper = styled.div`
     min-height: 100vh;
     max-width: 1400px;
     margin: 0 auto;
-    padding: 36px 0;
+    padding: 36px 24px;
 
     display: flex;
     flex-direction: column;
@@ -584,6 +584,7 @@ const StatValueWrapper = styled.div`
 
     @media screen and (max-width: 1200px) {
         font-size: 64px;
+        margin-bottom: 32px;
     }
 `
 
@@ -599,10 +600,19 @@ const InfoWrapper = styled.div`
     border-radius: 16px;
     padding: 12px 24px;
     border: 2px solid #2a2828;
+
+    @media screen and (max-width: 1200px) {
+        height: 48px;
+        width: unset;
+    }
 `
 
 const InfoBarWrapper = styled(InfoWrapper)`
     flex-direction: column;
+
+    @media screen and (max-width: 1200px) {
+        height: 180px;
+    }
 `
 
 const InfoBox = styled.div`
