@@ -14,7 +14,7 @@ import { Link, Element, animateScroll as scroll } from 'react-scroll'
 import uniqby from 'lodash.uniqby'
 import { useInView } from 'framer-motion'
 
-const RPC_URL = 'http://43.225.143.44:8545'
+const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL
 
 interface TransactionPerBlock {
     blockNumber: string
