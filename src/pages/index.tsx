@@ -29,6 +29,11 @@ let HIGHEST_GAS_USED = 0
 let HIGHEST_BLOCK_REWARD = 0
 let CURRENT_TRANSACTION = 0
 
+const headers = {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': true,
+}
+
 const TestPage = () => {
     const [transactionData, setTransactionData] = useState<TransactionPerBlock[]>([])
     const [gasPrice, setGasPrice] = useState<string>('0x0')
@@ -77,9 +82,7 @@ const TestPage = () => {
                     id: 1,
                 },
                 {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers,
                 },
             )
 
@@ -105,9 +108,7 @@ const TestPage = () => {
                     id: 1,
                 },
                 {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers,
                 },
             )
 
@@ -120,9 +121,7 @@ const TestPage = () => {
                     id: 1,
                 },
                 {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers,
                 },
             )
 
@@ -161,9 +160,7 @@ const TestPage = () => {
                     id: 1,
                 },
                 {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers,
                 },
             )
 
