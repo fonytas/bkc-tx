@@ -248,7 +248,7 @@ const HomePage = () => {
                             </InfoBox>
                         </InfoWrapper>
 
-                        <InfoWrapper>
+                        <InfoBarWrapper>
                             <InfoBox>
                                 <StatTitle>
                                     Current
@@ -272,7 +272,7 @@ const HomePage = () => {
                                             initialValue={0}
                                         />
                                     </CurrentTxWrapper>
-                                    <div className='blockchain'>
+                                    <Blockchain>
                                         <GasIcon>⛽️</GasIcon>
                                         {transactionData.slice(7).map((block) => (
                                             <div
@@ -288,11 +288,11 @@ const HomePage = () => {
                                                 )}
                                             </div>
                                         ))}
-                                    </div>
+                                    </Blockchain>
                                     <LatestBlock>#{latestBlock}</LatestBlock>
                                 </InfoValue>
                             </InfoBox>
-                        </InfoWrapper>
+                        </InfoBarWrapper>
 
                         {/* <InfoBarWrapper>
                             
@@ -568,10 +568,8 @@ const InfoWrapper = styled.div`
 `
 
 const InfoBarWrapper = styled(InfoWrapper)`
-    flex-direction: column;
-
     @media screen and (max-width: 1200px) {
-        height: 180px;
+        height: 130px;
     }
 `
 
@@ -587,6 +585,10 @@ const GasIcon = styled.div`
     right: 0;
     font-size: 60px;
     transform: translateY(-50%);
+    @media screen and (max-width: 1200px) {
+        right: unset;
+        left: 0;
+    }
 `
 
 const InfoValue = styled.div`
@@ -633,4 +635,16 @@ const LatestBlock = styled.div`
     font-size: 14px;
     font-weight: 400;
     margin-top: 4px;
+`
+
+const Blockchain = styled.div`
+    display: flex;
+    /* overflow-x: hidden; */
+    align-items: flex-end;
+    justify-content: start;
+    position: relative;
+
+    @media screen and (max-width: 1200px) {
+        justify-content: center;
+    }
 `
