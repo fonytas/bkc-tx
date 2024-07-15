@@ -16,7 +16,9 @@
 		"paths": {
 			"@helpers/*": ["helpers/*"],
 			"@components/*": ["components/*"],
-			"@styles/*": ["styles/*"]
+			"@styles/*": ["styles/*"],
+			"@hooks/*": ["hooks/*"],
+			"@constants/*": ["constants/*"]
 		}
 	},
 	"include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],

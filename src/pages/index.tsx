@@ -1,185 +1,66 @@
-import { hexToDecimal } from '@helpers/hexToDecimal'
 import { numberWithComma } from '@helpers/numberWithComma'
-import axios from 'axios'
-import { ethers } from 'ethers'
 import { useEffect, useRef, useState } from 'react'
 import { Bar } from 'react-chartjs-2'
 import { styled } from 'styled-components'
 // @ts-ignore
 import AnimatedNumber from 'react-animated-number'
 import { formatNumber } from '@helpers/formatNumber'
-import { removeTrailingDecimal } from '@helpers/removeTrailingDecimal'
 import HeroBanner from '@components/HeroBanner'
-import { Link, Element, animateScroll as scroll } from 'react-scroll'
-import uniqby from 'lodash.uniqby'
+import { Link, Element } from 'react-scroll'
 import { useInView } from 'framer-motion'
+import { useLatestBlock } from '@hooks/useLatestBlock'
+import { useGasPrice } from '@hooks/useGasPrice'
+import { useTransactionPerBlock } from '@hooks/useTransactionPerBlock'
+import { motion } from 'framer-motion'
+import ConfettiExplosion from 'react-confetti-explosion'
 
-const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || ''
-
-interface TransactionPerBlock {
-    blockNumber: string
-    transactionCount: string
-    gasUsed: string
-}
-
-const LIMIT_LENGTH = 12
-
-let HIGHEST_TRANSACTION_PER_BLOCK = 0
-let HIGHEST_GAS_USED = 0
-let HIGHEST_BLOCK_REWARD = 0
-let CURRENT_TRANSACTION = 0
-
-const headers = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-}
-
-const TestPage = () => {
-    const [transactionData, setTransactionData] = useState<TransactionPerBlock[]>([])
-    const [gasPrice, setGasPrice] = useState<string>('0x0')
+const HomePage = () => {
+    const { latestBlock, latestBlockInHex } = useLatestBlock()
+    const { gasPrice } = useGasPrice({ unit: 'gwei' })
+    const {
+        getTransactionPerBlock,
+        highestTransactionPerBlock,
+        transactionData,
+        highestGasUsed,
+        highestBlockReward,
+        currentTransactionPerBlock,
+    } = useTransactionPerBlock()
+    const [isBouncingHighest, setIsBouncingHighest] = useState(false)
+    const [isBouncingCurrent, setIsBouncingCurrent] = useState(false)
+    const [highestTxPerBlock, setHighestTxPerBlock] = useState(0)
+    const [currentTxPerBlock, setCurrentTxPerBlock] = useState(0)
 
     const ref = useRef(null)
     const isInView = useInView(ref, { once: false })
 
     useEffect(() => {
-        getLatestBlockNumber()
-        getGasPrice()
-        const interval = setInterval(async () => {
-            const result = await getTransactionsPerBlock()
-            if (result) {
-                setTransactionData((prevData) => {
-                    const updatedData = [...prevData, result]
-                    if (result.blockNumber === prevData[prevData.length - 1]?.blockNumber) {
-                        return [...prevData]
-                    }
+        if (Number(latestBlock)) {
+            getTransactionPerBlock(latestBlockInHex)
+        }
+    }, [latestBlock])
 
-                    if (prevData.length < 9) {
-                        const appendedData = Array.from({ length: LIMIT_LENGTH - prevData.length }, (_, index) => {
-                            return {
-                                blockNumber: (Number(result.blockNumber) - (LIMIT_LENGTH - index)).toString(),
-                                transactionCount: '0x0',
-                                gasUsed: '0x0',
-                            }
-                        })
-                        return uniqby([...appendedData, ...updatedData], 'blockNumber')
-                    } else {
-                        return uniqby(updatedData.slice(-LIMIT_LENGTH), 'blockNumber')
-                    }
-                })
-            }
+    useEffect(() => {
+        setIsBouncingHighest(true)
+
+        setTimeout(() => {
+            setIsBouncingHighest(false)
         }, 2000)
-        return () => clearInterval(interval)
-    }, [])
 
-    const getGasPrice = async () => {
-        try {
-            const _gasPrice = await axios.post(
-                RPC_URL,
-                {
-                    jsonrpc: '2.0',
-                    method: 'eth_gasPrice',
-                    params: [],
-                    id: 1,
-                },
-                {
-                    headers,
-                },
-            )
+        setHighestTxPerBlock(highestTransactionPerBlock)
+    }, [highestTransactionPerBlock])
 
-            const _gasPriceGwei = ethers.formatUnits(_gasPrice.data.result, 'gwei')
-            setGasPrice(_gasPriceGwei)
-
-            return _gasPriceGwei
-        } catch (error) {
-            console.log('error', error)
-        }
-    }
-
-    const getTransactionsPerBlock = async () => {
-        try {
-            const blockNumber = await getLatestBlockNumber()
-
-            const transactionsInBlock = await axios.post(
-                RPC_URL,
-                {
-                    jsonrpc: '2.0',
-                    method: 'eth_getBlockTransactionCountByNumber',
-                    params: [blockNumber],
-                    id: 1,
-                },
-                {
-                    headers,
-                },
-            )
-
-            const blockInfo = await axios.post(
-                RPC_URL,
-                {
-                    jsonrpc: '2.0',
-                    method: 'eth_getBlockByNumber',
-                    params: [blockNumber, false],
-                    id: 1,
-                },
-                {
-                    headers,
-                },
-            )
-
-            const transactionsPerBlock = transactionsInBlock.data.result
-            const gasUsed = hexToDecimal(blockInfo.data.result.gasUsed)
-
-            CURRENT_TRANSACTION = Number(hexToDecimal(transactionsPerBlock))
-
-            if (Number(hexToDecimal(transactionsPerBlock)) > Number(HIGHEST_TRANSACTION_PER_BLOCK)) {
-                HIGHEST_TRANSACTION_PER_BLOCK = Number(hexToDecimal(transactionsPerBlock))
-            }
-
-            if (Number(gasUsed) > Number(HIGHEST_GAS_USED)) {
-                HIGHEST_GAS_USED = Number(gasUsed)
-            }
-
-            const newData = {
-                blockNumber: hexToDecimal(blockNumber),
-                transactionCount: transactionsPerBlock,
-                gasUsed: hexToDecimal(blockInfo.data.result.gasUsed),
-            }
-            return newData
-        } catch (error) {
-            console.log('error', error)
-        }
-    }
-
-    const getLatestBlockNumber = async () => {
-        try {
-            const latestBlockNumber = await axios.post(
-                RPC_URL,
-                {
-                    jsonrpc: '2.0',
-                    method: 'eth_blockNumber',
-                    params: [],
-                    id: 1,
-                },
-                {
-                    headers,
-                },
-            )
-
-            return latestBlockNumber.data.result
-        } catch (error) {
-            console.log('error', error)
-        }
-    }
+    useEffect(() => {
+        setCurrentTxPerBlock(currentTransactionPerBlock)
+    }, [currentTransactionPerBlock])
 
     const data = {
         labels: [...transactionData.map((data) => data.blockNumber)],
-        // labels: dataMockup.labels,
         datasets: [
             {
                 label: 'No. of transactions per block',
                 backgroundColor: '#00B359',
                 borderColor: '#00B359',
                 borderWidth: 1,
-                // data: dataMockup.datasets[0].data,
                 data: [...transactionData.map((data) => data.transactionCount)],
             },
         ],
@@ -194,15 +75,14 @@ const TestPage = () => {
             datalabels: {
                 anchor: 'end' as any,
                 align: 'top' as any,
-                formatter: function (value: string) {
-                    const formattedValue = Number(hexToDecimal(value))
-                    if (formattedValue <= 0) {
+                formatter: function (value: number) {
+                    if (value <= 0) {
                         return ''
                     }
-                    if (formattedValue === HIGHEST_TRANSACTION_PER_BLOCK) {
-                        return `🔥${numberWithComma(formattedValue)}`
+                    if (value === highestTransactionPerBlock) {
+                        return `🔥${numberWithComma(value)}`
                     }
-                    return numberWithComma(formattedValue)
+                    return numberWithComma(value)
                 },
                 color: 'white',
                 font: {
@@ -264,15 +144,13 @@ const TestPage = () => {
     }
 
     const gasSpendingData = {
-        // labels: gasSpendingDataMockup.labels,
         labels: [...transactionData.map((data) => data.blockNumber)],
         datasets: [
             {
-                label: 'Gash Used per block',
+                label: 'Gas Used per block',
                 backgroundColor: '#00B359',
                 borderColor: '#00B359',
                 borderWidth: 1,
-                // data: gasSpendingDataMockup.datasets[0].data,
                 data: [...transactionData.map((data) => data.gasUsed)],
             },
         ],
@@ -319,14 +197,11 @@ const TestPage = () => {
         },
     }
 
-    const calculateLatestGasUsed = () => {
-        const latestGasUsed = transactionData[transactionData.length - 1]?.gasUsed
-        const rewardPerBoxInWei = Number(latestGasUsed) * Number(gasPrice)
-        const rewardPerBoxInEther = (rewardPerBoxInWei / 1e9).toString()
-        if (Number(rewardPerBoxInEther) > HIGHEST_BLOCK_REWARD) {
-            HIGHEST_BLOCK_REWARD = Number(removeTrailingDecimal(rewardPerBoxInEther))
-        }
-        return removeTrailingDecimal(rewardPerBoxInEther)
+    const [a, setA] = useState(0)
+
+    const randomNumber = () => {
+        // random number between 1 and 100
+        setA(Math.floor(Math.random() * 100) + 1)
     }
 
     return (
@@ -339,7 +214,6 @@ const TestPage = () => {
 
             <Element name='content'>
                 <ContentWrapper>
-                    {/* <section className='scroll-animation'> */}
                     <Wrapper className={isInView ? 'animation-element animate' : 'animation-element'}>
                         <InfoWrapper>
                             <InfoBox>
@@ -360,8 +234,8 @@ const TestPage = () => {
                                     <SubtitleText>Block Reward</SubtitleText>
                                 </StatTitle>
                                 <InfoValue>
-                                    {HIGHEST_BLOCK_REWARD >= 2.25 ? '🔥' : ''}
-                                    {HIGHEST_BLOCK_REWARD} KUB
+                                    {highestBlockReward >= 2.25 ? '🔥' : ''}
+                                    {highestBlockReward} KUB
                                 </InfoValue>
                             </InfoBox>
                             <Divider />
@@ -370,18 +244,93 @@ const TestPage = () => {
                                     Latest
                                     <SubtitleText>Block Reward</SubtitleText>
                                 </StatTitle>
-                                <InfoValue>{calculateLatestGasUsed()} KUB</InfoValue>
+                                <InfoValue>{transactionData?.[transactionData?.length - 1]?.blockReward} KUB</InfoValue>
                             </InfoBox>
                         </InfoWrapper>
 
-                        <InfoBarWrapper>
-                            <TitleWrapper>
-                                <StatTitle>Gas spending</StatTitle>
+                        <InfoWrapper>
+                            <InfoBox>
                                 <StatTitle>
+                                    Current
+                                    <SubtitleText>gas used per block</SubtitleText>
+                                </StatTitle>
+                                <InfoValue style={{ marginTop: '18px' }}>
+                                    <CurrentTxWrapper>
+                                        <AnimatedNumber
+                                            component='text'
+                                            value={currentTxPerBlock}
+                                            style={{
+                                                fontWeight: 'bold',
+                                                transition: '0.8s ease-out',
+                                                fontSize: 22,
+                                                transitionProperty: 'background-color, color, opacity',
+                                                color: '#00B359',
+                                            }}
+                                            duration={1200}
+                                            formatValue={(n: number) => `${numberWithComma(n) || '0'} Tx/Block`}
+                                            stepPrecision={0}
+                                            initialValue={0}
+                                        />
+                                    </CurrentTxWrapper>
+                                    <div className='blockchain'>
+                                        <GasIcon>⛽️</GasIcon>
+                                        {transactionData.slice(7).map((block) => (
+                                            <div
+                                                key={block.blockNumber}
+                                                className={`block ${
+                                                    block.blockNumber === transactionData[transactionData.length - 1].blockNumber
+                                                        ? ''
+                                                        : 'fadedBlock'
+                                                }`}
+                                            >
+                                                {block.gasUsed > 0 && (
+                                                    <div className='block-content'>{formatNumber(block.gasUsed)}</div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <LatestBlock>#{latestBlock}</LatestBlock>
+                                </InfoValue>
+                            </InfoBox>
+                        </InfoWrapper>
+
+                        {/* <InfoBarWrapper>
+                            
+                            <TitleWrapper>
+                                <InfoBox>
+                                    <StatTitle>
+                                        Current
+                                        <SubtitleText>Transactions per block</SubtitleText>
+                                    </StatTitle>
+                                </InfoBox>
+                                <StatTitle>
+                                    {isBouncingHighest && <ConfettiExplosion width={500} height={500} />}
+                                    <InfoValue>{transactionData?.[transactionData?.length - 1]?.transactionCount}</InfoValue>
                                     Highest:
                                     <AnimatedNumber
                                         component='text'
-                                        value={HIGHEST_GAS_USED}
+                                        value={highestGasUsed}
+                                        style={{
+                                            fontWeight: 'bold',
+                                            transition: '0.8s ease-out',
+                                            fontSize: 18,
+                                            transitionProperty: 'background-color, color, opacity',
+                                        }}
+                                        duration={1200}
+                                        formatValue={(n: number) => ` 🔥${formatNumber(n) || '0'}`}
+                                        stepPrecision={0}
+                                        initialValue={0}
+                                    />
+                                </StatTitle>
+                            </TitleWrapper>
+                            <TitleWrapper>
+                                <StatTitle>Gas spending</StatTitle>
+                                <StatTitle>
+                                    {isBouncingHighest && <ConfettiExplosion width={500} height={500} />}
+                                    Highest:
+                                    <AnimatedNumber
+                                        component='text'
+                                        value={highestGasUsed}
                                         style={{
                                             fontWeight: 'bold',
                                             transition: '0.8s ease-out',
@@ -398,21 +347,26 @@ const TestPage = () => {
                             <GasSpendingWrapper>
                                 <Bar data={gasSpendingData} options={gasSpendingOptions} />
                             </GasSpendingWrapper>
-                        </InfoBarWrapper>
+                        </InfoBarWrapper> */}
                     </Wrapper>
-                    {/* </section> */}
                     <br />
+                    {/* <button onClick={handleButtonClick}>dd</button> */}
                     <section>
                         <TransactionPerBlockWrapper
                             ref={ref}
                             className={isInView ? 'animation-element animate' : 'animation-element'}
                         >
                             <TransactionPerBlockWrapperBox>
-                                <StatValueWrapper>
+                                <StatValueWrapperHighest>
+                                    <ConfettiWrapper>
+                                        {isBouncingHighest && <ConfettiExplosion width={500} height={500} />}
+                                    </ConfettiWrapper>
+
                                     <LabelTitle>HIGHEST</LabelTitle>
+
                                     <AnimatedNumber
                                         component='text'
-                                        value={HIGHEST_TRANSACTION_PER_BLOCK}
+                                        value={highestTxPerBlock}
                                         style={{
                                             fontWeight: 'bold',
                                             transition: '0.8s ease-out',
@@ -426,27 +380,8 @@ const TestPage = () => {
                                         initialValue={0}
                                     />
                                     <Title>transactions per block</Title>
-                                </StatValueWrapper>
-
-                                <StatValueWrapper>
-                                    <LabelTitle>CURRENT</LabelTitle>
-                                    <AnimatedNumber
-                                        component='text'
-                                        value={CURRENT_TRANSACTION}
-                                        style={{
-                                            fontWeight: 'bold',
-                                            transition: '0.8s ease-out',
-                                            fontSize: 64,
-                                            transitionProperty: 'background-color, color, opacity',
-                                            color: '#00B359',
-                                        }}
-                                        duration={1200}
-                                        formatValue={(n: number) => `${numberWithComma(n) || '0'}`}
-                                        stepPrecision={0}
-                                        initialValue={0}
-                                    />
-                                    <Title>transactions per block</Title>
-                                </StatValueWrapper>
+                                    <Remark>(⛽️ Gas used: {formatNumber(highestGasUsed)})</Remark>
+                                </StatValueWrapperHighest>
                             </TransactionPerBlockWrapperBox>
 
                             <ChartWrapper>
@@ -459,7 +394,7 @@ const TestPage = () => {
         </Layout>
     )
 }
-export default TestPage
+export default HomePage
 
 const LabelTitle = styled.div`
     font-size: 48px;
@@ -499,10 +434,7 @@ const Wrapper = styled.div`
     justify-content: space-between;
     gap: 8px;
     height: 180px;
-    /* padding: 12px; */
     border-radius: 8px;
-    /* background-color: #262626; */
-    /* background-image: url('/background/block-bg.png'); */
 
     @media screen and (max-width: 1200px) {
         flex-direction: column;
@@ -572,6 +504,17 @@ const Title = styled.div`
     }
 `
 
+const Remark = styled.div`
+    font-size: 16px;
+    font-weight: 400;
+    text-align: center;
+    margin-top: 4px;
+
+    @media screen and (max-width: 1200px) {
+        font-size: 18px;
+    }
+`
+
 const StatValueWrapper = styled.div`
     display: flex;
     width: 100%;
@@ -581,6 +524,23 @@ const StatValueWrapper = styled.div`
     font-size: 72px;
     font-weight: bold;
     flex-direction: column;
+
+    @media screen and (max-width: 1200px) {
+        font-size: 64px;
+        margin-bottom: 32px;
+    }
+`
+
+const StatValueWrapperHighest = styled.div`
+    display: flex;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    font-size: 72px;
+    font-weight: bold;
+    flex-direction: column;
+    position: relative;
 
     @media screen and (max-width: 1200px) {
         font-size: 64px;
@@ -621,8 +581,16 @@ const InfoBox = styled.div`
     padding: 0 12px;
 `
 
+const GasIcon = styled.div`
+    position: absolute;
+    top: 50%;
+    right: 0;
+    font-size: 60px;
+    transform: translateY(-50%);
+`
+
 const InfoValue = styled.div`
-    font-size: 32px;
+    font-size: 28px;
     font-weight: bold;
     width: 100%;
     text-align: center;
@@ -654,80 +622,15 @@ const TitleWrapper = styled.div`
     width: 100%;
 `
 
-const dataMockup = {
-    labels: [
-        '17518332',
-        '17518333',
-        '17518334',
-        '17518335',
-        '17518336',
-        '17518337',
-        '17518338',
-        '17518339',
-        '17518340',
-        '17518341',
-        '17518342',
-        '17518343',
-    ],
-    datasets: [
-        {
-            label: 'No. of transactions per block',
-            backgroundColor: '#00B359',
-            borderColor: '#00B359',
-            borderWidth: 1,
-            data: [
-                '0x3782',
-                '0x6f3d',
-                '0x377c',
-                '0x322f',
-                '0x33d9',
-                '0x3244',
-                '0x6994',
-                '0x4537',
-                '0x6f3d',
-                '0x377c',
-                '0x322f',
-                '0x33d9',
-            ],
-        },
-    ],
-}
+const ConfettiWrapper = styled.div``
 
-const gasSpendingDataMockup = {
-    labels: [
-        '17518300',
-        '17518301',
-        '17518302',
-        '17518303',
-        '17518304',
-        '17518305',
-        '17518306',
-        '17518307',
-        '17518308',
-        '17518309',
-        '17518310',
-        '17518311',
-    ],
-    datasets: [
-        {
-            label: 'Gas Used per block',
-            backgroundColor: '#00B359',
-            borderColor: '#00B359',
-            borderWidth: 1,
-            data: [
-                '537067165',
-                '310771165',
-                '266356165',
-                '253168165',
-                '293341165',
-                '311058164',
-                '443974165',
-                '148525165',
-                '537067165',
-                '310771165',
-                '266356165',
-                '253168165',
-            ],
-        },
-    ],
-}
+const CurrentTxWrapper = styled.div`
+    margin-bottom: 6px;
+    font-size: 24px;
+`
+
+const LatestBlock = styled.div`
+    font-size: 14px;
+    font-weight: 400;
+    margin-top: 4px;
+`

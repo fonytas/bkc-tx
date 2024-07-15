@@ -9,6 +9,8 @@
 		"lint": "next lint"
 	},
 	"dependencies": {
+		"@react-three/drei": "^9.108.3",
+		"@react-three/fiber": "8.2.2",
 		"@types/lodash.uniqby": "^4.7.9",
 		"add": "^2.0.6",
 		"axios": "^1.7.2",
@@ -16,14 +18,19 @@
 		"chartjs-plugin-datalabels": "^2.2.0",
 		"ethers": "^6.13.1",
 		"framer-motion": "^11.3.0",
+		"framer-motion-3d": "11.2.0",
 		"lodash.uniqby": "^4.7.0",
 		"next": "14.2.4",
+		"popmotion": "^11.0.5",
 		"react": "^18",
 		"react-animated-number": "^0.4.4",
 		"react-chartjs-2": "^5.2.0",
+		"react-confetti-explosion": "^2.1.2",
 		"react-dom": "^18",
+		"react-loading": "^2.0.3",
 		"react-scroll": "^1.9.0",
 		"styled-components": "^6.1.11",
+		"three": "0.137.0",
 		"typewriter-effect": "^2.21.0",
 		"yarn": "^1.22.22"
 	},
