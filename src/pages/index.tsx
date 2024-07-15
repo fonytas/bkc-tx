@@ -13,6 +13,7 @@ import { useGasPrice } from '@hooks/useGasPrice'
 import { useTransactionPerBlock } from '@hooks/useTransactionPerBlock'
 import { motion } from 'framer-motion'
 import ConfettiExplosion from 'react-confetti-explosion'
+import { getTransactionClass } from '@helpers/getTransactionClass'
 
 const HomePage = () => {
     const { latestBlock, latestBlockInHex } = useLatestBlock()
@@ -277,11 +278,7 @@ const HomePage = () => {
                                         {transactionData.slice(7).map((block) => (
                                             <div
                                                 key={block.blockNumber}
-                                                className={`block ${
-                                                    block.blockNumber === transactionData[transactionData.length - 1].blockNumber
-                                                        ? ''
-                                                        : 'fadedBlock'
-                                                }`}
+                                                className={`block block-${getTransactionClass(block.gasUsed)}`}
                                             >
                                                 {block.gasUsed > 0 && (
                                                     <div className='block-content'>{formatNumber(block.gasUsed)}</div>

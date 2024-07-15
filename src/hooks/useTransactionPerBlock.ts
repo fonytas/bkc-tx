@@ -75,11 +75,8 @@ export const useTransactionPerBlock = () => {
                 setTransactionData([...appendedData, ...newArray])
             } else {
                 if (newArray.length >= LIMIT_LENGTH) {
-                    // setTransactionData(newArray.slice(-LIMIT_LENGTH))
                     setTransactionData(() => newArray.slice(1))
                 }
-
-                // setTransactionData(newArray.slice(-LIMIT_LENGTH))
             }
         } catch (error) {
             console.log('error', error)
@@ -94,8 +91,6 @@ export const useTransactionPerBlock = () => {
         }
         return Number(removeTrailingDecimal(rewardPerBoxInEther))
     }
-
-    console.log('transactionData', transactionData)
 
     return {
         getTransactionPerBlock,
