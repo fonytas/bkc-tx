@@ -25,7 +25,11 @@ class MyDocument extends Document {
     render() {
         return (
             <Html lang='en'>
-                <Head />
+                <Head>
+                    <meta property='og:title' content='BKCDM #4 | Bitkub Chain' />
+                    <meta property='og:description' content='Description Here' />
+                    <meta property='og:image' content='https://static.bitkubnext.com/bitkub-next/banners/bkcdm.png' />
+                </Head>
                 <body>
                     <Main />
                     <NextScript />
