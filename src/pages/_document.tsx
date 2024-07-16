@@ -27,7 +27,7 @@ class MyDocument extends Document {
             <Html lang='en'>
                 <Head>
                     <meta property='og:title' content='BKCDM #4 | Bitkub Chain' />
-                    <meta property='og:description' content='Description Here' />
+                    <meta property='og:description' content='Bitkub Chain Dev Meetup' />
                     <meta property='og:image' content='https://static.bitkubnext.com/bitkub-next/banners/bkcdm.png' />
                 </Head>
                 <body>
