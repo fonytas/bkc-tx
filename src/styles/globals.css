@@ -54,13 +54,14 @@ body {
 .block {
     width: 50px;
     height: 50px; /* Square dimensions */
-    color: #686868; /* White text */
     margin-right: 20px; /* Space between blocks */
     position: relative;
     animation: popIn 0.6s ease-out forwards;
     box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.2);
     transform-origin: center left; /* Animation origin */
     border-radius: 8px;
+    color: #ffffff;
+    text-shadow: 1px 0 #000, -1px 0 #000, 0 1px #000, 0 -1px #000, 1px 1px #000, -1px -1px #000, 1px -1px #000, -1px 1px #000;
 }
 
 .block-content {
