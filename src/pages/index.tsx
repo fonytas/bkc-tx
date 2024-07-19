@@ -106,9 +106,9 @@ const HomePage = () => {
                     },
                 },
                 min: 0,
-                suggestedMax: 28000,
+                suggestedMax: highestTransactionPerBlock > 23000 ? 28000 : 6000,
                 ticks: {
-                    stepSize: 4000,
+                    stepSize: highestTransactionPerBlock > 12000 ? 4000 : 1000,
                 },
                 grid: {
                     display: true,
